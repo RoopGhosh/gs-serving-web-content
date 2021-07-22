@@ -20,7 +20,7 @@ public class ServingWebContentApplication {
     public static void main(String[] args) throws InterruptedException {
         SpringApplication.run(ServingWebContentApplication.class, args);
         while (true) {
-            Thread.sleep(100);
+            //Thread.sleep(5);
             Random test = new Random();
             String tss = test.doubles(100).mapToObj(ServingWebContentApplication::test).collect(Collectors.joining(","));
             fixed.add(tss);
