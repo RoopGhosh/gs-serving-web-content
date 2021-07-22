@@ -21,11 +21,8 @@ jobs:
       with:
         java-version: '11'
 
-    - name: change directory
-      run: cd complete
-
     - name: Build with Maven
-      run: mvn clean install
+      run: cd complete; mvn clean install
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
