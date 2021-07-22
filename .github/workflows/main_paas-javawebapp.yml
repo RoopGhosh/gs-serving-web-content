@@ -21,14 +21,17 @@ jobs:
       with:
         java-version: '11'
 
+    - name: change directory
+      run: cd complete
+
     - name: Build with Maven
-      run: cd complete/ ; mvn clean install
+      run: mvn clean install
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
       with:
         name: java-app
-        path: '${{ github.workspace }}/target/*.jar'
+        path: '${{ github.workspace }}/complete/target/*.jar'
 
   deploy:
     runs-on: ubuntu-latest
