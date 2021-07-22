@@ -7,8 +7,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -27,32 +25,27 @@ public class GreetingController {
     }
 
     @GetMapping("/loop100")
-    public ResponseEntity<String> loop100() throws InterruptedException {
-        Executor executor = Executors.newFixedThreadPool(2);
+    public ResponseEntity<String> loop100(@RequestParam(name = "loopCount", required = false, defaultValue = "500") String loopCount,
+                                          @RequestParam(name = "threads", required = false, defaultValue = "2") String threads,
+                                          @RequestParam(name = "sleepTime", required = false, defaultValue = "20") String sleepTime,
+                                          @RequestParam(name = "arraySize", required = false, defaultValue = "1000") String arraySize)
+            throws InterruptedException{
+        Executor executor = Executors.newFixedThreadPool(Integer.parseInt(threads));
         StringBuffer stringBuffer = new StringBuffer();
         // Get the Java runtime
         Runtime runtime = Runtime.getRuntime();
 
-        for (int i = 0; i < 500; i++) {
-            Thread.sleep(10);
+        for (int i = 0; i < Integer.parseInt(loopCount); i++) {
+            Thread.sleep(Integer.parseInt(sleepTime));
             executor.execute(() -> {
-                Random test = new Random();
-                String tss = test.doubles(100).mapToObj(GreetingController::test).collect(Collectors.joining(","));
+                String tss = new Random().doubles(100)
+                        .mapToObj(GreetingController::test).collect(Collectors.joining(","));
                 fixed.add(tss);
-                if (fixed.size() > 10000) {
+                if (fixed.size() > Integer.parseInt(arraySize)) {
                     fixed.remove(ThreadLocalRandom.current().nextInt(0, fixed.size()));
                 }
                 stringBuffer.append(tss);
             });
-            long freeMem = runtime.freeMemory();
-            if (freeMem / (1024 * 1024) < 300) {
-                while (freeMem / (1024 * 1024) < 300) {
-                    freeMem = runtime.freeMemory();
-                    runtime.gc();
-                    fixed.removeAll(fixed.subList(0, 1000));
-                }
-            }
-
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .body("Loop 100 over. array size is "+ fixed.size());
