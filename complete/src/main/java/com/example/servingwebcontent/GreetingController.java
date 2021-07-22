@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class GreetingController {
 
+    private List<String> fixed = new ArrayList<>();
     @GetMapping("/greeting")
     public String greeting(@RequestParam(name = "name", required = false, defaultValue = "World") String name, Model model) {
         model.addAttribute("name", name);
@@ -27,9 +28,11 @@ public class GreetingController {
 
     @GetMapping("/loop100")
     public ResponseEntity<String> loop100() throws InterruptedException {
-        List<String> fixed = new ArrayList<>();
         Executor executor = Executors.newFixedThreadPool(2);
         StringBuffer stringBuffer = new StringBuffer();
+        // Get the Java runtime
+        Runtime runtime = Runtime.getRuntime();
+
         for (int i = 0; i < 500; i++) {
             Thread.sleep(10);
             executor.execute(() -> {
@@ -41,9 +44,18 @@ public class GreetingController {
                 }
                 stringBuffer.append(tss);
             });
+            long freeMem = runtime.freeMemory();
+            if (freeMem / (1024 * 1024) < 300) {
+                while (freeMem / (1024 * 1024) < 300) {
+                    freeMem = runtime.freeMemory();
+                    runtime.gc();
+                    fixed.removeAll(fixed.subList(0, 1000));
+                }
+            }
+
         }
         return ResponseEntity.status(HttpStatus.OK)
-                .body("Loop 100 over"+ stringBuffer);
+                .body("Loop 100 over. array size is "+ fixed.size());
     }
 
     private static String test(final Double i) {
